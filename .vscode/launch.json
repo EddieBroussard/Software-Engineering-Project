@@ -8,7 +8,7 @@
             "name": "(gdb) Attach",
             "type": "cppdbg",
             "request": "attach",
-            "program": "enter program name, for example ${workspaceFolder}/a.exe",
+            "program": "softwareengineeringrepo.exe",
             "MIMode": "gdb",
             "miDebuggerPath": "/path/to/gdb",
             "setupCommands": [
