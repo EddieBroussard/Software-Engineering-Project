@@ -1,22 +1,26 @@
 #include <iostream>
-#include <vector>
-#include <string>
 #include <fstream>
 #include <sstream>
-#include <ctime>
-#include <cstdlib>
+#include <vector>
+#include <string>
+#include <numeric>
+#include <cstdlib> 
+#include <algorithm>
 
 using namespace std;
 
-#pragma once
 
-#ifndef MYHEADER_H
-#define MYHEADER_H
-
-// Helper function to generate a random credit score between 500 and 800
 int generateRandomCreditScore() {
     return rand() % 301 + 500;  // Generates a number between 500 and 800
 }
+
+// ENUM for Improvement Submission Status
+enum Status {
+    Pending,
+    Approved,
+    Rejected
+};
+
 
 class UserInterfaceClass {
 private:
@@ -70,9 +74,7 @@ public:
             }
         }
 
-        // Generate a random credit score for the new user
         float creditScore = generateRandomCreditScore();
-
         userDatabase.push_back(make_pair(email, make_pair(password, creditScore)));
         saveUser(email, password, creditScore);
         return true;
@@ -81,12 +83,11 @@ public:
     void updateCreditScore(const string& email, float newScore) {
         for (auto& user : userDatabase) {
             if (user.first == email) {
-                user.second.second = newScore;  // Update credit score
+                user.second.second = newScore;
                 cout << "Credit score for " << email << " updated to " << newScore << endl;
                 break;
             }
         }
-        // Rewrite the entire file with updated data
         ofstream file("userpass.txt", ios::trunc);
         for (const auto& user : userDatabase) {
             file << user.first << "," << user.second.first << "," << user.second.second << endl;
@@ -113,8 +114,62 @@ public:
             file.close();
         }
     }
+
 };
 
+class GenerateCreditReportClass {
+public:
+    string reportID;
+    string memberID;
+    string email;
+    float creditScore;
+
+    GenerateCreditReportClass(const string& rid = "", const string& mid = "", const string& em = "", float score = 0.0f)
+        : reportID(rid), memberID(mid), email(em), creditScore(score) {}
+
+    void generateReport() {
+        time_t now = time(0);
+        char* dt = ctime(&now);
+
+        cout << "\n===== Credit Report =====\n";
+        cout << "Report ID: " << reportID << endl;
+        cout << "Member ID: " << memberID << endl;
+        cout << "Email:     " << email << endl;
+        cout << "Generated: " << dt;
+        cout << "Credit Score: " << creditScore << endl;
+
+        if (creditScore >= 750) {
+            cout << "Status: Excellent Credit\n";
+        }
+        else if (creditScore >= 650) {
+            cout << "Status: Good Credit\n";
+        }
+        else if (creditScore >= 550) {
+            cout << "Status: Fair Credit\n";
+        }
+        else {
+            cout << "Status: Poor Credit\n";
+        }
+        cout << "===========================\n";
+
+        // Also save to file
+        ofstream file("credit_reports.txt", ios::app);
+        if (file.is_open()) {
+            file << "Report ID: " << reportID << "\n"
+                << "Member ID: " << memberID << "\n"
+                << "Email: " << email << "\n"
+                << "Generated: " << dt
+                << "Credit Score: " << creditScore << "\n"
+                << "===========================\n";
+            file.close();
+        }
+        else {
+            cout << "Failed to save report to file.\n";
+        }
+    }
+};
+
+// Notification Class
 class NotificationClass {
 public:
     string notificationID;
@@ -123,7 +178,6 @@ public:
 
     void sendNotification(const string& userID, const string& message) {
         cout << "Notification to " << userID << ": " << message << endl;
-
         ofstream file("notifications.txt", ios::app);
         if (file.is_open()) {
             file << "Notification to " << userID << ": " << message << "\n";
@@ -135,6 +189,7 @@ public:
     }
 };
 
+// Document Submission Class
 class DocumentSubmissionClass {
 public:
     string documentID;
@@ -144,7 +199,6 @@ public:
 
     void submitDocument(const string& memberID, const string& documentData) {
         cout << "Document \"" << documentData << "\" submitted for member: " << memberID << endl;
-
         ofstream file("documents.txt", ios::app);
         if (file.is_open()) {
             file << "Member ID: " << memberID << "\nDocument: " << documentData << "\n---\n";
@@ -156,6 +210,7 @@ public:
     }
 };
 
+// Member Report Class
 class SubmitMemberReportClass {
 public:
     string reportID;
@@ -164,7 +219,6 @@ public:
 
     void submitReport(const string& memberID, const string& details) {
         cout << "Submitting report for member " << memberID << ": " << details << endl;
-
         ofstream file("member_reports.txt", ios::app);
         if (file.is_open()) {
             file << "Member ID: " << memberID << "\nReport Details: " << details << "\n---\n";
@@ -176,6 +230,7 @@ public:
     }
 };
 
+// Manager Class
 class ManagerClass {
 public:
     string managerID;
@@ -183,7 +238,6 @@ public:
     string email;
 
     void wipeAllData() {
-        // Deletes all user and report files
         remove("userpass.txt");
         remove("credit_reports.txt");
         remove("member_reports.txt");
@@ -192,12 +246,219 @@ public:
     }
 };
 
-#endif
+// Improvement Submission Class
+class ImprovementSubmissionClass {
+public:
+    string submissionID;
+    string memberID;
+    vector<string> documents;
+    Status status;
+
+    bool submitImprovementRequest(string memberID, vector<string> proofDocuments) {
+        this->memberID = memberID;
+        this->documents = proofDocuments;
+        this->status = Pending;
+        return true;
+    }
+
+    string trackImprovementStatus(string requestID) {
+        switch (status) {
+        case Pending: return "Pending";
+        case Approved: return "Approved";
+        case Rejected: return "Rejected";
+        }
+        return "Unknown";
+    }
+};
+
+// Fraud Alert Class
+class FraudAlertClass {
+public:
+    string alertID;
+    string description;
+    string reporterID;
+
+    bool resolveFraudCase(string id) {
+        cout << "Resolving fraud case with ID: " << id << endl;
+        return true;
+    }
+
+    void logFraudIncident(string details) {
+        cout << "Logging fraud incident: " << details << endl;
+        ofstream file("fraud_alerts.txt", ios::app);
+        if (file.is_open()) {
+            file << "Alert ID: " << alertID << "\n"
+                << "Reporter ID: " << reporterID << "\n"
+                << "Description: " << details << "\n"
+                << "---\n";
+            file.close();
+        }
+        else {
+            cout << "Failed to save fraud incident to file.\n";
+        }
+    }
+};
+
+// Member Class
+class MemberClass {
+public:
+    string memberID;
+    string name;
+    string email;
+    float creditScore;
+    vector<string> paymentHistory;
+
+    MemberClass(const string& id = "", const string& nm = "", const string& em = "", float score = 0.0f)
+        : memberID(id), name(nm), email(em), creditScore(score) {}
+
+    void viewCreditScore() const {
+        cout << "Member ID: " << memberID << "\n"
+            << "Name:      " << name << "\n"
+            << "Email:     " << email << "\n"
+            << "Score:     " << creditScore << "\n"
+            << "History:   ";
+        for (const auto& rec : paymentHistory) cout << rec << "; ";
+        cout << "\n\n";
+    }
+
+    bool applyForImprovement(const vector<string>& proofDocuments) {
+        cout << "[Member] " << memberID << " submitted " << proofDocuments.size()
+            << " docs for credit improvement." << endl;
+        return true;
+    }
+};
+
+// Admin Class
+class AdminClass {
+public:
+    string adminID;
+    string name;
+    string email;
+    vector<string> privileges;
+
+    AdminClass(const string& id = "", const string& nm = "", const string& em = "")
+        : adminID(id), name(nm), email(em) {}
+
+    bool reviewBlacklistEntry(const string& entryID) {
+        cout << "[Admin] Reviewing blacklist entry " << entryID << endl;
+        return true;
+    }
+
+    void manageAccessRights(const string& userID) {
+        cout << "[Admin] Managing access for user " << userID << endl;
+    }
+
+    bool verifyDocumentSubmission(const string& memberID, const vector<string>& documents) {
+        cout << "[Admin] Verified " << documents.size() << " docs for member " << memberID << endl;
+        return true;
+    }
+};
+
+// CIBIL Associate Class
+class CIBILAssociateClass {
+public:
+    string associateID;
+    string institutionName;
+    string contactInfo;
+
+    CIBILAssociateClass(const string& id = "", const string& inst = "", const string& contact = "")
+        : associateID(id), institutionName(inst), contactInfo(contact) {}
+
+    void submitDefaulterData(const string& memberID, const string& reason) {
+        cout << "[Associate] Submitted defaulter data for " << memberID
+            << " Reason: " << reason << endl;
+    }
+
+    string trackReportStatus(const string& reportID) {
+        cout << "[Associate] Tracking status for report " << reportID << endl;
+        return "Pending";
+    }
+
+    void submitFinancialData(const string& memberID, const string& data) {
+        cout << "[Associate] Submitted financial data \"" << data
+            << "\" for " << memberID << endl;
+    }
+};
+
+// Credit Report Class
+class CreditReportClass {
+public:
+    string reportID;
+    string memberID;
+    string loanDetails;
+
+    CreditReportClass(const string& rid = "", const string& mid = "", const string& loan = "")
+        : reportID(rid), memberID(mid), loanDetails(loan) {}
+
+    float calculateCreditScore(const vector<float>& payments) {
+        if (payments.empty()) return 0.0f;
+        float sum = accumulate(payments.begin(), payments.end(), 0.0f);
+        return sum / payments.size();
+    }
+
+    void generateReport(const string& userID) {
+        cout << "[CreditReport] Generating report " << reportID
+            << " for user " << userID << "\n"
+            << "Loan details: " << loanDetails << "\n\n";
+    }
+};
+
+// Blacklist Entry Class
+class BlacklistEntryClass {
+public:
+    string entryID;
+    string memberID;
+    string reason;
+    float fineAmount;
+
+    BlacklistEntryClass(const string& eid = "", const string& mid = "",
+        const string& rsn = "", float fine = 0.0f)
+        : entryID(eid), memberID(mid), reason(rsn), fineAmount(fine) {}
+
+    bool submitFineReceipt(const string& receiptData) {
+        cout << "[Blacklist] Receipt for entry " << entryID
+            << ": " << receiptData << endl;
+        return true;
+    }
+
+    bool updateStatus(const string& status) {
+        cout << "[Blacklist] Entry " << entryID
+            << " status updated to " << status << endl;
+        return true;
+    }
+};
+
+// Payment History Class
+class PaymentHistoryClass {
+public:
+    string paymentID;
+    string memberID;
+    float amountPaid;
+    string paymentDate;
+
+    PaymentHistoryClass(const string& pid = "", const string& mid = "",
+        float amt = 0.0f, const string& date = "")
+        : paymentID(pid), memberID(mid), amountPaid(amt), paymentDate(date) {}
+
+    void addPaymentRecord(const string& mid, float amount, const string& date) {
+        memberID = mid;
+        amountPaid = amount;
+        paymentDate = date;
+        cout << "[PaymentHistory] " << memberID
+            << " paid " << amountPaid
+            << " on " << paymentDate << endl;
+    }
+};
+
 
 int main() {
     srand(time(0));  // Initialize random seed
+
     UserInterfaceClass uic;
     uic.loadUsers();
+
+    ImprovementSubmissionClass improvementManager;
+    FraudAlertClass fraudManager;
 
     bool programRunning = true;
 
@@ -205,7 +466,7 @@ int main() {
         int choice;
         cout << "\n1. Register\n2. Login\n3. Exit\nChoose an option: ";
         cin >> choice;
-        cin.ignore();  // Ignore the newline character left in the input buffer
+        cin.ignore();  // Clear newline character
 
         bool loggedIn = false;
         string email, password, role = "";
@@ -217,8 +478,6 @@ int main() {
 
             if (uic.registerUser(userData)) {
                 cout << "Registration successful.\n";
-
-                // Check if the new registration is a manager
                 size_t commaPos = userData.find(',');
                 if (commaPos != string::npos) {
                     email = userData.substr(0, commaPos);
@@ -241,7 +500,7 @@ int main() {
                 cout << "Login successful.\n";
                 loggedIn = true;
 
-                // Improved role detection
+                // Detect role
                 if (email.size() >= 10 && email.substr(email.size() - 10) == "@admin.com") {
                     role = "admin";
                 }
@@ -253,21 +512,38 @@ int main() {
                 }
                 cout << "Logged in as: " << role << endl;
 
-                // Logged in user menu
+                // Create credit report for the logged-in user
+                float userScore = 0.0f;
+                for (const auto& user : uic.getAllUsers()) {
+                    if (user.first == email) {
+                        userScore = user.second.second;
+                        break;
+                    }
+                }
+
+                // Generate a report ID based on time
+                time_t now = time(0);
+                string reportID = "RPT" + to_string(now % 1000000);
+
+                GenerateCreditReportClass creditReport(reportID, "MEM" + to_string(rand() % 10000), email, userScore);
+                creditReport.generateReport();
+
                 if (role == "admin") {
                     NotificationClass notifier;
                     SubmitMemberReportClass memberReporter;
-
                     int adminChoice = 0;
-                    while (adminChoice != 7) {
+
+                    while (adminChoice != 9) {
                         cout << "\nAdmin Options:\n";
                         cout << "1. View all users\n";
                         cout << "2. Track report status\n";
                         cout << "3. Update credit score\n";
-                        cout << "4. Submit Report\n";
-                        cout << "5. Send Notification\n";
-                        cout << "6. Submit Member Report\n";
-                        cout << "7. Logout\n";
+                        cout << "4. Submit report\n";
+                        cout << "5. Send notification\n";
+                        cout << "6. Submit member report\n";
+                        cout << "7. Log Fraud Incident\n";
+                        cout << "8. Resolve Fraud Case\n";
+                        cout << "9. Logout\n";
                         cout << "Choose an option: ";
                         cin >> adminChoice;
                         cin.ignore();
@@ -286,12 +562,13 @@ int main() {
                         }
                         else if (adminChoice == 3) {
                             cout << "Enter email to update credit score: ";
-                            string email;
-                            getline(cin, email);
+                            string emailToUpdate;
+                            getline(cin, emailToUpdate);
                             cout << "Enter new credit score: ";
                             float newScore;
                             cin >> newScore;
-                            uic.updateCreditScore(email, newScore);
+                            cin.ignore();
+                            uic.updateCreditScore(emailToUpdate, newScore);
                         }
                         else if (adminChoice == 4) {
                             string details;
@@ -301,7 +578,7 @@ int main() {
                         }
                         else if (adminChoice == 5) {
                             string userID, message;
-                            cout << "Enter userID to send notification to: ";
+                            cout << "Enter userID: ";
                             getline(cin, userID);
                             cout << "Enter notification message: ";
                             getline(cin, message);
@@ -316,11 +593,28 @@ int main() {
                             memberReporter.submitReport(memberID, reportDetails);
                         }
                         else if (adminChoice == 7) {
+                            string fraudDetails;
+                            cout << "Enter fraud details: ";
+                            getline(cin, fraudDetails);
+                            fraudManager.logFraudIncident(fraudDetails);
+                            cout << "Fraud incident logged.\n";
+                        }
+                        else if (adminChoice == 8) {
+                            string alertID;
+                            cout << "Enter fraud alert ID to resolve: ";
+                            getline(cin, alertID);
+                            if (fraudManager.resolveFraudCase(alertID)) {
+                                cout << "Fraud case resolved.\n";
+                            }
+                            else {
+                                cout << "Failed to resolve fraud case.\n";
+                            }
+                        }
+                        else if (adminChoice == 9) {
                             cout << "Logging out...\n";
-                            break;
                         }
                         else {
-                            cout << "Invalid choice. Please try again.\n";
+                            cout << "Invalid choice.\n";
                         }
                     }
                 }
@@ -344,30 +638,32 @@ int main() {
                             }
                         }
                         else if (managerChoice == 2) {
-                            cout << "Blacklist review functionality would go here\n";
+                            cout << "Blacklist review functionality would go here.\n";
                         }
                         else if (managerChoice == 3) {
                             manager.wipeAllData();
                         }
                         else if (managerChoice == 4) {
                             cout << "Logging out...\n";
-                            break;
                         }
                         else {
-                            cout << "Invalid choice. Please try again.\n";
+                            cout << "Invalid choice.\n";
                         }
                     }
                 }
                 else if (role == "user") {
                     DocumentSubmissionClass docSubmitter;
                     int userChoice = 0;
-                    while (userChoice != 5) {
+                    while (userChoice != 8) {  // Changed to 8 to add new option
                         cout << "\nUser Options:\n";
                         cout << "1. View Credit Score\n";
-                        cout << "2. Submit Document\n";
-                        cout << "3. Apply for Removal\n";
-                        cout << "4. Submit Report\n";
-                        cout << "5. Logout\n";
+                        cout << "2. Generate New Credit Report\n";  // New option
+                        cout << "3. Submit Document\n";
+                        cout << "4. Apply for Removal\n";
+                        cout << "5. Submit Report\n";
+                        cout << "6. Submit Improvement Request\n";
+                        cout << "7. Track Improvement Request Status\n";
+                        cout << "8. Logout\n";
                         cout << "Choose an option: ";
                         cin >> userChoice;
                         cin.ignore();
@@ -381,10 +677,18 @@ int main() {
                             }
                         }
                         else if (userChoice == 2) {
-                            string documentData;
-                            cout << "Enter document data to submit: ";
-                            getline(cin, documentData);
-                            docSubmitter.submitDocument(email, documentData);
+                            // Generate a new report
+                            float userScore = 0.0f;
+                            for (const auto& user : uic.getAllUsers()) {
+                                if (user.first == email) {
+                                    userScore = user.second.second;
+                                    break;
+                                }
+                            }
+                            time_t now = time(0);
+                            string newReportID = "RPT" + to_string(now % 1000000);
+                            GenerateCreditReportClass newReport(newReportID, "MEM" + to_string(rand() % 10000), email, userScore);
+                            newReport.generateReport();
                         }
                         else if (userChoice == 3) {
                             string reason;
@@ -399,26 +703,44 @@ int main() {
                             uic.submitReport(details);
                         }
                         else if (userChoice == 5) {
+                            vector<string> documents;
+                            string doc;
+                            cout << "Enter documents (type 'done' when finished):\n";
+                            while (true) {
+                                getline(cin, doc);
+                                if (doc == "done") break;
+                                documents.push_back(doc);
+                            }
+                            improvementManager.submitImprovementRequest(email, documents);
+                            cout << "Improvement request submitted.\n";
+                        }
+                        else if (userChoice == 6) {
+                            cout << "Improvement Status: " << improvementManager.trackImprovementStatus(improvementManager.submissionID) << endl;
+                        }
+                        else if (userChoice == 7) {
                             cout << "Logging out...\n";
-                            break;
+                        }
+                        else if (userChoice == 8) {
+                            cout << "Logging out...\n";
                         }
                         else {
-                            cout << "Invalid choice. Please try again.\n";
+                            cout << "Invalid choice.\n";
                         }
                     }
                 }
-                else {
-                    cout << "Login failed. Incorrect email or password.\n";
-                }
-            }
-            else if (choice == 3) {
-                cout << "Exiting program.\n";
-                programRunning = false;
             }
             else {
-                cout << "Invalid choice.\n";
+                cout << "Login failed. Incorrect email or password.\n";
             }
         }
+        else if (choice == 3) {
+            cout << "Exiting program.\n";
+            programRunning = false;
+        }
+        else {
+            cout << "Invalid choice.\n";
+        }
     }
+
     return 0;
 }
