@@ -7,14 +7,15 @@
 #include <cstdlib> 
 #include <algorithm>
 
+
 using namespace std;
 
 
 int generateRandomCreditScore() {
-    return rand() % 301 + 500;  // Generates a number between 500 and 800
+    return rand() % 301 + 500;  
 }
 
-// ENUM for Improvement Submission Status
+
 enum Status {
     Pending,
     Approved,
@@ -129,7 +130,10 @@ public:
 
     void generateReport() {
         time_t now = time(0);
-        char* dt = ctime(&now);
+        char dt[26];
+        ctime_s(dt, sizeof(dt), &now);
+
+
 
         cout << "\n===== Credit Report =====\n";
         cout << "Report ID: " << reportID << endl;
@@ -169,7 +173,7 @@ public:
     }
 };
 
-// Notification Class
+
 class NotificationClass {
 public:
     string notificationID;
@@ -189,7 +193,7 @@ public:
     }
 };
 
-// Document Submission Class
+
 class DocumentSubmissionClass {
 public:
     string documentID;
@@ -210,7 +214,7 @@ public:
     }
 };
 
-// Member Report Class
+
 class SubmitMemberReportClass {
 public:
     string reportID;
@@ -230,7 +234,7 @@ public:
     }
 };
 
-// Manager Class
+
 class ManagerClass {
 public:
     string managerID;
@@ -246,7 +250,7 @@ public:
     }
 };
 
-// Improvement Submission Class
+
 class ImprovementSubmissionClass {
 public:
     string submissionID;
@@ -271,7 +275,7 @@ public:
     }
 };
 
-// Fraud Alert Class
+
 class FraudAlertClass {
 public:
     string alertID;
@@ -299,7 +303,7 @@ public:
     }
 };
 
-// Member Class
+
 class MemberClass {
 public:
     string memberID;
@@ -328,7 +332,7 @@ public:
     }
 };
 
-// Admin Class
+
 class AdminClass {
 public:
     string adminID;
@@ -354,7 +358,7 @@ public:
     }
 };
 
-// CIBIL Associate Class
+
 class CIBILAssociateClass {
 public:
     string associateID;
@@ -380,7 +384,7 @@ public:
     }
 };
 
-// Credit Report Class
+
 class CreditReportClass {
 public:
     string reportID;
@@ -403,7 +407,7 @@ public:
     }
 };
 
-// Blacklist Entry Class
+
 class BlacklistEntryClass {
 public:
     string entryID;
@@ -428,7 +432,7 @@ public:
     }
 };
 
-// Payment History Class
+
 class PaymentHistoryClass {
 public:
     string paymentID;
@@ -452,11 +456,11 @@ public:
 
 
 int main() {
-    srand(time(0));  // Initialize random seed
+    srand(time(0));  
 
     UserInterfaceClass uic;
     uic.loadUsers();
-
+    AdminClass ac;
     ImprovementSubmissionClass improvementManager;
     FraudAlertClass fraudManager;
 
@@ -466,9 +470,8 @@ int main() {
         int choice;
         cout << "\n1. Register\n2. Login\n3. Exit\nChoose an option: ";
         cin >> choice;
-        cin.ignore();  // Clear newline character
+        cin.ignore();  
 
-        bool loggedIn = false;
         string email, password, role = "";
 
         if (choice == 1) {
@@ -490,6 +493,7 @@ int main() {
                 cout << "Registration failed.\n";
             }
         }
+
         else if (choice == 2) {
             cout << "Email: ";
             getline(cin, email);
@@ -498,21 +502,17 @@ int main() {
 
             if (uic.login(email, password)) {
                 cout << "Login successful.\n";
-                loggedIn = true;
 
-                // Detect role
-                if (email.size() >= 10 && email.substr(email.size() - 10) == "@admin.com") {
+                if (email.size() >= 10 && email.substr(email.size() - 10) == "@admin.com")
                     role = "admin";
-                }
-                else if (email.size() >= 12 && email.substr(email.size() - 12) == "@manager.com") {
+                else if (email.size() >= 12 && email.substr(email.size() - 12) == "@manager.com")
                     role = "manager";
-                }
-                else {
+                else
                     role = "user";
-                }
+
                 cout << "Logged in as: " << role << endl;
 
-                // Create credit report for the logged-in user
+                // Generate report
                 float userScore = 0.0f;
                 for (const auto& user : uic.getAllUsers()) {
                     if (user.first == email) {
@@ -521,10 +521,8 @@ int main() {
                     }
                 }
 
-                // Generate a report ID based on time
                 time_t now = time(0);
                 string reportID = "RPT" + to_string(now % 1000000);
-
                 GenerateCreditReportClass creditReport(reportID, "MEM" + to_string(rand() % 10000), email, userScore);
                 creditReport.generateReport();
 
@@ -621,43 +619,84 @@ int main() {
                 else if (role == "manager") {
                     ManagerClass manager;
                     int managerChoice = 0;
-                    while (managerChoice != 4) {
+                    while (managerChoice != 5) {
                         cout << "\nManager Options:\n";
                         cout << "1. View all users\n";
                         cout << "2. Review Blacklist Entry\n";
                         cout << "3. Wipe all user data\n";
-                        cout << "4. Logout\n";
+                        cout << "4. Blacklist a user\n";
+                        cout << "5. Logout\n";
                         cout << "Choose an option: ";
                         cin >> managerChoice;
                         cin.ignore();
 
                         if (managerChoice == 1) {
-                            cout << "\nRegistered Users:\n";
                             for (const auto& user : uic.getAllUsers()) {
                                 cout << "- " << user.first << "\n";
                             }
                         }
                         else if (managerChoice == 2) {
-                            cout << "Blacklist review functionality would go here.\n";
+                            string revID;
+                            string details;
+                            cout << "Enter new ID for BlackList Review: " << endl;
+                            cin >> revID;
+                            cout << "Enter details regarding BlackList: " << endl;
+                            cin >> details;
+                            ac.reviewBlacklistEntry(revID);
+                            fstream file("blacklistre.txt", ios::app);
+                            if (file.is_open()) {
+                                file << "Review Details: " << details << "\n---\n";
+                                file.close();
+                            }
+
                         }
                         else if (managerChoice == 3) {
                             manager.wipeAllData();
                         }
                         else if (managerChoice == 4) {
-                            cout << "Logging out...\n";
-                        }
-                        else {
-                            cout << "Invalid choice.\n";
+                            string emailToBlacklist, reason;
+                            float fine;
+                            cout << "Enter email of user to blacklist: ";
+                            getline(cin, emailToBlacklist);
+                            cout << "Enter reason for blacklisting: ";
+                            getline(cin, reason);
+                            cout << "Enter fine amount: ";
+                            cin >> fine;
+                            cin.ignore();
+
+                            string entryID = "BLK" + to_string(rand() % 100000);
+                            string memberID = "MEM" + to_string(rand() % 10000);
+
+                            BlacklistEntryClass blacklistEntry(entryID, memberID, reason, fine);
+                            blacklistEntry.updateStatus("Blacklisted");
+
+                            cout << "User " << emailToBlacklist << " has been blacklisted.\n";
+
+                            ofstream file("blacklist.txt", ios::app);
+                            if (file.is_open()) {
+                                file << "Entry ID: " << entryID << "\n"
+                                    << "Email: " << emailToBlacklist << "\n"
+                                    << "Member ID: " << memberID << "\n"
+                                    << "Reason: " << reason << "\n"
+                                    << "Fine: " << fine << "\n"
+                                    << "Status: Blacklisted\n"
+                                    << "---\n";
+                                file.close();
+                            }
+                            else {
+                                cout << "Failed to write to blacklist file.\n";
+                            }
                         }
                     }
                 }
+
                 else if (role == "user") {
                     DocumentSubmissionClass docSubmitter;
                     int userChoice = 0;
-                    while (userChoice != 8) {  // Changed to 8 to add new option
+                    while (userChoice != 8) {
                         cout << "\nUser Options:\n";
                         cout << "1. View Credit Score\n";
-                        cout << "2. Generate New Credit Report\n";  // New option
+                        cout << "2. Generate New Credit Report\n";
                         cout << "3. Submit Document\n";
                         cout << "4. Apply for Removal\n";
                         cout << "5. Submit Report\n";
@@ -669,40 +708,35 @@ int main() {
                         cin.ignore();
 
                         if (userChoice == 1) {
-                            for (const auto& user : uic.getAllUsers()) {
-                                if (user.first == email) {
-                                    cout << "Your credit score is: " << user.second.second << endl;
-                                    break;
-                                }
-                            }
+                            cout << "Your credit score is: " << userScore << endl;
                         }
                         else if (userChoice == 2) {
-                            // Generate a new report
-                            float userScore = 0.0f;
-                            for (const auto& user : uic.getAllUsers()) {
-                                if (user.first == email) {
-                                    userScore = user.second.second;
-                                    break;
-                                }
-                            }
                             time_t now = time(0);
                             string newReportID = "RPT" + to_string(now % 1000000);
                             GenerateCreditReportClass newReport(newReportID, "MEM" + to_string(rand() % 10000), email, userScore);
                             newReport.generateReport();
                         }
                         else if (userChoice == 3) {
+                            string doc;
+                            string memID;
+                            cout << "Enter document: ";
+                            getline(cin, doc);
+                            getline(cin, memID);
+                            docSubmitter.submitDocument(memID, doc);
+                        }
+                        else if (userChoice == 4) {
                             string reason;
                             cout << "Enter reason for removal: ";
                             getline(cin, reason);
                             uic.applyForRemoval(reason);
                         }
-                        else if (userChoice == 4) {
+                        else if (userChoice == 5) {
                             string details;
                             cout << "Enter report details: ";
                             getline(cin, details);
                             uic.submitReport(details);
                         }
-                        else if (userChoice == 5) {
+                        else if (userChoice == 6) {
                             vector<string> documents;
                             string doc;
                             cout << "Enter documents (type 'done' when finished):\n";
@@ -712,13 +746,9 @@ int main() {
                                 documents.push_back(doc);
                             }
                             improvementManager.submitImprovementRequest(email, documents);
-                            cout << "Improvement request submitted.\n";
-                        }
-                        else if (userChoice == 6) {
-                            cout << "Improvement Status: " << improvementManager.trackImprovementStatus(improvementManager.submissionID) << endl;
                         }
                         else if (userChoice == 7) {
-                            cout << "Logging out...\n";
+                            cout << "Improvement Status: " << improvementManager.trackImprovementStatus(improvementManager.submissionID) << endl;
                         }
                         else if (userChoice == 8) {
                             cout << "Logging out...\n";
@@ -733,10 +763,12 @@ int main() {
                 cout << "Login failed. Incorrect email or password.\n";
             }
         }
+
         else if (choice == 3) {
             cout << "Exiting program.\n";
             programRunning = false;
         }
+
         else {
             cout << "Invalid choice.\n";
         }
